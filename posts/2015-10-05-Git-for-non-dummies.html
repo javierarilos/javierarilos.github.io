@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<title>slow hands developer</title>
+
+<xmp theme="journal" style="display:none;">
+
+  # GIT fast intro for non dummies
+  ## Who is this guide for
+  This is a small introduction for people that maybe has been playing a little bit with GIT without reading a lot about it or is quite experienced with other VCS (Version Control Systems).
+
+  We will assume that you already have GIT installed [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git), and you know how to work with the command line.
+
+  ## Some Git good practices
+  This should be the last section of the guide, but since this is a guide for non-dummies, you already know many of the things explained below. So, for that reason I want you to read this before getting bored with the rest of the guide.
+
+  ### Positive good practices
+  Things we should do to maintain good practices:
+  * commits:
+   * commit message is very important and should summarize the change so that when someone (probably yourself) wants to review history will be able to understand the change by just reading the commit message.
+   * commit should be small and cover one single logical change. For example, refactor of a database field, can affect many files, but should be an atomic change.
+   * review and test code before commiting it. `git status` and `git diff` are your friends, `git commit -a` is a trap.
+  * pushing to remote:
+   * push only code that do not break things that are working. This is specially important when you work with Continuous Integration and in team.
+   * push and pull as frequently as you can. The longer your code is not synchronized with others, the more risk.
+  * branches: branches are a nice feature, but they must be handled with care. Many Continuous Integration practitioners just refuse working with them.
+   * branches should be as short lived as possible. The longer your code is not synchronized with others, the more risk.
+   * integrate frequently, for example bringing external changes to your branch.
+   * if you need a long lived branch, think on the reasons, try to split it in many small sequential short-lived branches.
+   * good naming, is key. It is even better if you use project-wide conventions.
+  * tagging: tag your releases, follow semantic versioning conventions (semver).
+
+  ### Negative good practices
+  Things we should **not** do to maintain healty repositories and good practices:
+  * Do NOT commit any result of build/executing your project: executables, logs, intermediate libraries...
+  * Do NOT create large repositories, better split them in many smaller ones.
+  * Do NOT change pushed public history. If things break, do new commits to fix the problems, possibly with revert or patching.
+
+
+  ## Starting to work with a remote repository
+  The most usual setup is that you will be working with a remote repository, either alone or within a team. In any case, you will need to grab your GIT url and go a ***git clone***, for example:
+  ```bash
+  git clone git@github.com:BVLC/caffe.git
+  cd caffe/
+  ```
+
+  Git allows you to clone a repo via HTTPS or SSH, being SSH the recommended one. See [Generating SSH keys](https://help.github.com/articles/generating-ssh-keys/) for more information on how to setup SSH.
+
+  If you are creating a new repository, the easiest thing is to login in your Github account and create it from the browser, then clone it.
+
+  ## Git repositories
+  A big difference between Git and other VCS such as SVN, is that each developer works with two repositories: local and remote.
+
+  * A **local** repository in the developer machine. The developer works modifying the repository contents with "**git add**" and "**git remove**" operations, and then doing "**git commit**" to the local repository. All this changes remain in the local repository.
+
+  * The **remote** repository, in the server. When developers end working in their commits, they can do "**git push**", so that all changes in the local repository are sent to the remote repository.
+
+```txt
+
++-----------------------------------------------------+         +------------+
+| LOCAL REPO                                          |         |REMOTE REPO |
+|                         +                   +       |         |  +         |
+|                         |                   |       |GIT PUSH |  |         |
+| +---+                   +-----+             +-----+ +-------->+  +-----+   |
+| |   |                   |  |                |  |    |         |  |  |      |
+| +-----------+           |  +--+             |  +--+ |         |  |  +--+   |
+| |           |GIT ADD/RM |  |     GIT COMMIT |  |    |         |  |  |      |
+| |           +---------->+  +--+ +---------->+  +--+ |GIT PULL |  |  +--+   |
+| |           |           |                   |       | <-------+  |         |
+| +-----------+           +-----+             +-----+ |         |  +-----+   |
+|                             |                   |   |         |      |     |
+|                             +-+                 +-+ |         |      +-+   |
+|                                                     |         |            |
+|  WORKING DIRECTORY     STAGING AREA           HEAD  |         |            |
+|                                                     |         |            |
++-----------------------------------------------------+         +------------+
+
+```
+
+  Creating, adding, committing and pushing a file:
+  ```bash
+  $ echo 'this is a source file.' >> file.txt
+  $ git add file.txt
+  $ git commit -m "created file.txt"
+  $ echo "showing the commits in our local repo"
+  $ git log
+  $ echo "pushing local brach 'master' to server named 'origin'. 'origin' is a $ convention for the name of the remote repository."
+  $ git push origin master
+  ```
+
+  ## Local repository
+  The local repository is made of three elements:
+  * The **working directory**, where the files are contained. Files can be tracked, or not, by Git.
+  * The **staging area** (or index), where changes from last commit are.
+  * The **HEAD** which is pointing to the last commit.
+
+  ```bash
+  $ echo 'some changes to file' >> file.txt
+  $ echo 'a new, untracked file' >> untracked.txt
+  $ git status
+  On branch master
+  Changes not staged for commit:
+    (use "git add <file>..." to update what will be committed)
+    (use "git checkout -- <file>..." to discard changes in working directory)
+
+  	modified:   file.txt
+
+  Untracked files:
+    (use "git add <file>..." to include in what will be committed)
+
+  	untracked.txt
+  ```
+
+  ## Getting remote changes
+  If some developer has made changes to the remote repository, you can bring them for merging into your local copy by doing **git pull**
+
+  ```bash
+  $ git pull origin master
+  ```
+
+  Many times, you will not be aware that other developer has made modifications to the git remote repository, when you push, Git will **reject** your changes.
+
+  ```bash
+  $ git push origin master
+  To https://github.com/USERNAME/REPOSITORY.git
+  ! [rejected]        master -> master (non-fast-forward)
+  error: failed to push some refs to 'https://github.com/USERNAME/REPOSITORY.git'
+  To prevent you from losing history, non-fast-forward updates were rejected
+  Merge the remote changes (e.g. 'git pull') before pushing again.  See the
+  'Note about fast-forwards' section of 'git push --help' for details.
+  ```
+
+  In this case, you just need to pull your changes, remove conflicts (if any) and then push again.
+
+  ## Reset your local changes
+  Many times you will want to undo some changes in your local copy, use **git checkout --**.
+
+  ```bash
+  $ echo "undoing unstaged changes (not committed) to file.txt"
+  $ git checkout -- file.txt
+  ```
+
+  If you want to remove all of your local commits that have been not pushed you can use **git reset** (use it *CAREFULLY*):
+
+  ```bash
+  $ git reset --hard origin/master
+  ```
+
+  ## Branches
+  You may want to work using branches:
+
+  ```bash
+  $ echo "Creating a new branch, feature_x"
+  $ git checkout -b feature_x
+  $ echo "Switch back to an existing branch: master (master is the default branch)"
+  $ git checkout master
+  $ echo "Delete feature_x branch"
+  $ git branch -d feature_x
+  $ echo "You have to push your branch so that it is  available to other developers"
+  $ git push origin feature_x
+  ```
+
+
+[back](../index.html)
+</xmp>
+
+<script src="http://strapdownjs.com/v/0.2/strapdown.js"></script>
+</html>
