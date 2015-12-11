@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<title>Template</title>
+
+<xmp theme="journal" style="display:none;">
+  # Docker as a packaging deployment and execution environment
+
+  Before starting, Docker is a very interesting, even revolutionary technology. And is so powerful that has many use-cases and ways to explain what it does.
+
+  Here, we are talking about Docker as a tool for packaging and executing our applications, whatever they are.
+
+  ## What is Docker?
+  > ["Docker allows you to package an application with all of its dependencies into a standardized unit for software development."](https://www.docker.com/whatisdocker)
+
+  When Docker was created, many people sold it as '*lighter Virtual Machines*' and, while that is true, Docker appeal lays in its ability not to just **RUN** but to **PACKAGE** and **DEPLOY applications** in an **isolated** and **repeatable** way.
+
+  ### Application isolation at kernel level
+  In the history of software, many technology, there have been many different ways to isolate running systems, for example:
+  * At the OS level: Virtual Machines
+  * At the runtime level: Python virtualenv
+
+  Docker achieves the same, but at a diferent (maybe the right?) level of isolation: at the **kernel level**.
+
+  Let's compare the isolation levels:
+
+  **How Virtual Machines isolate applications**
+
+  ![alt text](https://www.docker.com/sites/default/files/what-is-docker-diagram.png "")
+
+  **How Docker isolate applications**
+
+  ![alt text](https://www.docker.com/sites/default/files/what-is-vm-diagram.png "")
+
+  The diagram indicates that Docker isolates at Operating System. More concretely, what Docker does is to create isolated environments for your applications at the **kernel** level.
+
+  That is, your application and the Host Operating System share the same kernel, and the libraries your application need are piled over the kernel.
+
+  For example, in a CentOs7 operating system we can create a Docker container with all Ubuntu libraries and packages, then compile and run our application inside the Ubuntu container. Our application could ever tell de difference between running in that Docker container, an Ubuntu VM or an Ubuntu physical machine.
+
+  ### But really, how is this better than VMs?
+  So far, we presented Docker as a lighter (and thus more efficient) alternative to Virtual Machines.
+
+  That could lead to improved usage of our resources, but since our goal is to present Docker also as a packaging and deployment environment... we still don't see a big difference with VMs.
+
+  Docker is not only the container execution environment, it also has a set of tools that help us to really improve our workflow compared to VMs:
+  * **Docker registry**: is a repository where Docker *images* are stored, and can be retrieved.
+  * **Docker client**: Command line tool that allows us to work with *containers*, images and *repositories*, more on this later.
+  * **Dockerfile**: File for automatically build Docker images.
+  * **Docker layered Filesystem**: Docker images and containers share a lot of Filesystem resources (eg: a Python runtime). Docker images and containers have a Filesystem made of different layers. Many of this layers can be shared between different images.
+
+  ### Docker workflow redux
+  ```txt
+
+                                         docker
+  +------------+  docker  +------------+ push    +------------+
+  |            |  build   |            +-------> |   Docker   |
+  | Dockerfile +--------> |   image    |         |  registry  |
+  |            |          |            | <-------+            |
+  +------------+          +----+-------+  docker +------------+
+                               |          pull
+                        docker |
+                           run |     +------------+
+                               +---> |            |
+                                     | container  |
+                                     |            |
+                                     +------------+
+  ```
+
+  A **Docker container** is a running (and mutable) instance of a **Docker image** (which is immutable).
+
+  There can be many running containers for any given image, eg: have many webservers in many containers, all of them equal.
+
+  Images are immutable, and can be pulled/pushed from/to a **Docker registry**. This way, an image is created once, and run multiple times, from different places by pulling it.
+
+  **Dockerfile** allows to automatically build a Docker image.
+
+  ## Some references
+  * [Docker userguide](https://docs.docker.com/userguide/)
+  * [Supercharge your development environment using Docker](https://denibertovic.com/talks/supercharge-development-env-using-docker/#/)
+
+[back](index.html)
+</xmp>
+
+<script src="http://strapdownjs.com/v/0.2/strapdown.js"></script>
+</html>
